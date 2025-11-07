@@ -1,7 +1,8 @@
 import importlib
 import uvicorn
-from fastapi import FastAPI
 import logging.config
+from fastapi import FastAPI
+from core.database import Base, engine
 
 app = FastAPI(
     title="Unichance API",
@@ -25,6 +26,10 @@ for module_path, router_name in routers:
         logger.info(f"Successfully loaded router from {module_path}")
     except Exception as e:
         logger.error(f"Failed to import router from {module_path}: {e}")
+
+
+Base.metadata.create_all(bind=engine)
+logger.info("All database tables created successfully")
 
 if __name__ == "__main__":
     logger.info("Starting Uvicorn server...")

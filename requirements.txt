@@ -6,3 +6,4 @@ passlib
 python-jose
 pydantic
 pydantic[email]
+argon2_cffi

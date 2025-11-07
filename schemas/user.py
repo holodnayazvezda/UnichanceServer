@@ -19,8 +19,8 @@ class Token(BaseModel):
 
 
 class UserOut(BaseModel):
-    name: str
     id: int
+    name: str
     username: str
     email: EmailStr
 
