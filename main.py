@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 routers = [
     ("services.ping", "ping_router"),
+    ("services.auth", "auth_router"),
 ]
 
 for module_path, router_name in routers:

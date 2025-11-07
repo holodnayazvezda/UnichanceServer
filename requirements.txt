@@ -1,3 +1,8 @@
 uvicorn
 fastapi
 importlib
+sqlalchemy
+passlib
+python-jose
+pydantic
+pydantic[email]
