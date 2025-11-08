@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import hash_password, verify_password, create_access_token, get_current_user
+from models.lesson_subject import LessonSubject
 from models.user_status import UserStatus
 from schemas.user import UserCreate, UserLogin, Token, UserOut
 from models.user import User
@@ -13,6 +14,9 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
+
+    if user.subject == LessonSubject.UNICHANCE:
+        raise HTTPException(status_code=403, detail="Only superadmins can have this lesson")
 
     if user.avatar_uuid:
         if not check_file_exists(user.avatar_uuid, db):

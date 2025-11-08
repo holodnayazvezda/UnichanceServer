@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import get_current_user
 from models.user_status import UserStatus
-from schemas.teacher import ResultOfSearchUserId, CreateLessonForm, ResulfOfOperations
+from schemas.teacher import ResultOfSearchUserId, CreateLessonForm, ResulfOfOperations, LessonCreated
 from models.user import User
 from models.lesson import Lesson
 
@@ -30,8 +30,11 @@ def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_use
     return {"id": user.id}
 
 
-@router.post("/create_lesson", response_model=ResulfOfOperations)
-def create_lesson(data: CreateLessonForm, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.post("/create_lesson", response_model=LessonCreated)
+def create_lesson(
+        data: CreateLessonForm,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)):
     
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
@@ -50,10 +53,10 @@ def create_lesson(data: CreateLessonForm, db: Session = Depends(get_db), current
     db.refresh(new_lesson)
     
 
-    return {"result": "Lesson is secsessfully added"}
+    return new_lesson
 
 
-@router.get("/add_child_in_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
+@router.put("/add_child_in_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
 def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
@@ -61,15 +64,81 @@ def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depend
             detail="You haven't rights to do this"
         )
 
-    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
-    lesson.users.append(db.query(User).filter(User.id == child_id).first())
+    try:
+        lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+        assert lesson
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lesson not found"
+        )
+
+    if lesson.teacher_id not in (current_user.id, db.query(User).filter(User.email == "Unichance33@yandex.ru").first().id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This is not your lesson"
+        )
+
+    try:
+        user = db.query(User).filter(User.id == child_id).first()
+        assert user
+        lesson.users.append(user)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not in list of lesson"
+        )
+
     db.commit()
 
     return {"result": "secssesfull"}
 
 
-@router.get("/list_of_your_lection")
-def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+@router.delete("/delete_child_from_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
+def delete_user_endpoint(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    user = db.query(User).filter(User.id == child_id).first()
+
+    if current_user.status == UserStatus.GUEST:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You haven't rights to do this"
+        )
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    try:
+        lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lesson not found"
+        )
+
+    if lesson.teacher_id not in (current_user.id, db.query(User).filter(User.email == "Unichance33@yandex.ru").first().id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This is not your lesson"
+        )
+
+    try:
+        lesson.users.remove(db.query(User).filter(User.id == child_id).first())
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not in list of lesson"
+        )
+
+    db.commit()
+
+    return {"result": "User secsessfully delete from lesson"}
+
+
+@router.get("/list_of_lessons")
+def get_list_of_lessons(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -85,6 +154,7 @@ def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Dep
         user = db.query(User).filter(User.id == lesson.teacher_id).first()
         lessons.append(
             {
+                "id": lesson.id,
                 "time": lesson.time,
                 "type_lesson": lesson.subject,
                 "teacher_FIO": f"{teacher.surname} {teacher.name} {teacher.patronymic}",
@@ -94,7 +164,7 @@ def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Dep
                         "id": user.id,
                         "FIO": f"{user.surname} {user.name} {user.patronymic}",
                         "email": user.email,
-                        "photo": user.image_path,
+                        "avatar_uuid": user.avatar_uuid,
                     }
                         for user in lesson.users]
             }
