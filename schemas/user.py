@@ -1,13 +1,16 @@
 from pydantic import BaseModel, EmailStr
 from fastapi import  UploadFile, File
 
+from models.lesson_subject import LessonSubject
+
+
 class UserCreate(BaseModel):
     name: str
     surname: str
     patronymic: str
     email: EmailStr
     password: str
-    lesson_type: str
+    subject: LessonSubject
     avatar_uuid: str
     
 
@@ -28,7 +31,7 @@ class UserOut(BaseModel):
     patronymic: str
     email: EmailStr
     status: str
-    lesson_type: str
+    subject: LessonSubject
     avatar_uuid: str
 
     class Config:

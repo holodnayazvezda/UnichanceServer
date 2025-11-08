@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import get_current_user
+from models.user_status import UserStatus
 from schemas.teacher import ResultOfSearchUserId, CreateLessonForm, ResulfOfOperations
 from models.user import User
 from models.lesson import Lesson
@@ -14,13 +15,13 @@ router = APIRouter(prefix="/teacher", tags=["Teacher"])
 def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     
     user = db.query(User).filter(User.email == user_email).first()
-    if current_user.status == "guest":
+    if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You haven't rights to do this"
         )
 
-    if not user or user.status != 'guest':
+    if not user or user.status != UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User is not founded"
@@ -32,14 +33,14 @@ def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_use
 @router.post("/create_lesson", response_model=ResulfOfOperations)
 def create_lesson(data: CreateLessonForm, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     
-    if current_user.status == "guest":
+    if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You haven't rights to do this"
         )
     
     new_lesson = Lesson(
-        type_lesson=current_user.lesson_type,
+        subject=current_user.subject,
         teacher_id=current_user.id,
         time=data.time,
         place=data.place,
@@ -54,7 +55,7 @@ def create_lesson(data: CreateLessonForm, db: Session = Depends(get_db), current
 
 @router.get("/add_child_in_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
 def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.status == "guest":
+    if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You haven't rights to do this"
@@ -69,7 +70,7 @@ def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depend
 
 @router.get("/list_of_your_lection")
 def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if current_user.status == "guest":
+    if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You haven't rights to do this"
@@ -85,7 +86,7 @@ def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Dep
         lessons.append(
             {
                 "time": lesson.time,
-                "type_lesson": lesson.type_lesson,
+                "type_lesson": lesson.subject,
                 "teacher_FIO": f"{teacher.surname} {teacher.name} {teacher.patronymic}",
                 "place": lesson.place,
                 "users":

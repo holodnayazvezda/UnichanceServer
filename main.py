@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from core.database import Base, engine
 from fastapi.staticfiles import StaticFiles
 
+from models.lesson_subject import LessonSubject
+from models.user_status import UserStatus
+
 app = FastAPI(
     title="Unichance API",
     version="1.1.1",
@@ -50,9 +53,9 @@ with SessionLocal() as db:
             patronymic="Вольдемаровна",
             email="Unichance33@yandex.ru",
             password_hash=hash_password("Unichance33"),
-            status="superadmin",
+            status=UserStatus.SUPERADMIN,
             avatar_uuid="",
-            lesson_type="Унишанс",
+            subject=LessonSubject.UNICHANCE
         )
 
         db.add(new_user)

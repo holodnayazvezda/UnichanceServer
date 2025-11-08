@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, Enum as SQLAlchemyEnum
 from sqlalchemy.orm import relationship
+
+from models.lesson_subject import LessonSubject
 from models.user import User
 from core.database import Base
 
@@ -8,7 +10,7 @@ class Lesson(Base):
     __tablename__ = 'lessons'
 
     id = Column(Integer, primary_key=True)
-    type_lesson = Column(String, nullable=False)
+    subject = Column(SQLAlchemyEnum(LessonSubject), nullable=False)
 
     teacher_id = Column(Integer, ForeignKey(User.id), nullable=False)
     time = Column(String, index=True)

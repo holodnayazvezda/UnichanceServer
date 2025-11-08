@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import hash_password, verify_password, create_access_token, get_current_user
+from models.user_status import UserStatus
 from schemas.user import UserCreate, UserLogin, Token, UserOut
 from models.user import User
 from services.files import check_file_exists
@@ -23,8 +24,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         surname=user.surname,
         patronymic=user.patronymic,
         password_hash=hashed,
-        status="guest",
-        lesson_type=user.lesson_type,
+        status=UserStatus.GUEST,
+        subject=user.subject,
         avatar_uuid=user.avatar_uuid,
         email=str(user.email)
     )

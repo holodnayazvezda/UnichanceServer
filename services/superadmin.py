@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import get_current_user
+from models.user_status import UserStatus
 from schemas.superadmin import ResultOfSearchUserId, ResulfOfOperations
 from models.user import User
 
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/superadmin", tags=["Superadmin"])
 def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     
     user = db.query(User).filter(User.email == user_email).first()
-    if current_user.status != "superadmin":
+    if current_user.status != UserStatus.SUPERADMIN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You are not SUPERADMIN"
@@ -37,7 +38,7 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db), current_us
             detail="User not found"
         )
     
-    if current_user.status != "superadmin":
+    if current_user.status != UserStatus.SUPERADMIN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You are not SUPERADMIN"
@@ -49,7 +50,7 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db), current_us
             detail="User is not founded"
         )
         
-    if user.status == 'superadmin':
+    if user.status == UserStatus.SUPERADMIN:
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail="You can't delete superadmin"
@@ -67,7 +68,7 @@ def set_status_teacher(user_id: int, db: Session = Depends(get_db), current_user
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    if current_user.status != "superadmin":
+    if current_user.status != UserStatus.SUPERADMIN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="You are not SUPERADMIN"
@@ -79,19 +80,19 @@ def set_status_teacher(user_id: int, db: Session = Depends(get_db), current_user
             detail="User is not founded"
         )
         
-    if user.status == 'superadmin':
+    if user.status == UserStatus.SUPERADMIN:
         raise HTTPException(
             status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
             detail="You can't move down from superadmin to teacher"
         )
         
-    if user.status == 'teacher':
+    if user.status == UserStatus.TEACHER:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="This user is already teacher"
         )
 
-    user.status = "teacher"
+    user.status = UserStatus.TEACHER
     db.commit()
     db.refresh(user)
 

@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum as SQLAlchemyEnum
 from core.database import Base
+from models.lesson_subject import LessonSubject
+from models.user_status import UserStatus
 
 
 class User(Base):
@@ -10,7 +12,7 @@ class User(Base):
     surname = Column(String(100), index=True)
     patronymic = Column(String(100), index=True)
     password_hash = Column(String(255), nullable=False)
-    status = Column(String(100), index=True)
-    lesson_type = Column(String(100), index=True)
+    status = Column(SQLAlchemyEnum(UserStatus), index=True)
+    subject = Column(SQLAlchemyEnum(LessonSubject), index=True)
     avatar_uuid = Column(String(255), nullable=True)
     email = Column(String(100), unique=True, nullable=False)
