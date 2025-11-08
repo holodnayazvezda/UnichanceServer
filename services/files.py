@@ -77,7 +77,7 @@ def get_file(
 @router.get(
     "/preview/{file_uuid}",
     summary="Отобразить изображение по UUID",
-    description="Отображает изображение по его уникальному идентификатору.",
+    description="Отображает изображение по его уникальному идентификатору."
 )
 def get_file(
         file_uuid: str,
