@@ -67,4 +67,4 @@ with SessionLocal() as db:
 
 if __name__ == "__main__":
     logger.info("Starting Uvicorn server...")
-    uvicorn.run(app, host="0.0.0.0", port=1488)
+    uvicorn.run(app, host="0.0.0.0", port=6969)
