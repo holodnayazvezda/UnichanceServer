@@ -6,7 +6,9 @@ from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
 from core.database import get_db
+from core.security import get_current_user
 from models.file import File as FileModel  # чтобы не пересекалось с fastapi.File
+from models.user import User
 
 router = APIRouter(prefix="/files", tags=["File API"])
 
@@ -56,7 +58,11 @@ async def upload_file(
     summary="Получить изображение по UUID",
     description="Возвращает изображение по его уникальному идентификатору.",
 )
-def get_file(file_uuid: str, db: Session = Depends(get_db)):
+def get_file(
+        file_uuid: str,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
     db_file = db.query(FileModel).filter(FileModel.uuid == file_uuid).first()
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
@@ -73,7 +79,11 @@ def get_file(file_uuid: str, db: Session = Depends(get_db)):
     summary="Отобразить изображение по UUID",
     description="Отображает изображение по его уникальному идентификатору.",
 )
-def get_file(file_uuid: str, db: Session = Depends(get_db)):
+def get_file(
+        file_uuid: str,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
     db_file = db.query(FileModel).filter(FileModel.uuid == file_uuid).first()
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
