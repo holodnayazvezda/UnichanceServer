@@ -8,11 +8,11 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), index=True)
-    surname = Column(String(100), index=True)
-    patronymic = Column(String(100), index=True)
+    name = Column(String(100))
+    surname = Column(String(100))
+    patronymic = Column(String(100))
     password_hash = Column(String(255), nullable=False)
-    status = Column(SQLAlchemyEnum(UserStatus), index=True)
-    subject = Column(SQLAlchemyEnum(LessonSubject), index=True)
+    status = Column(SQLAlchemyEnum(UserStatus))
+    subject = Column(SQLAlchemyEnum(LessonSubject))
     avatar_uuid = Column(String(255), nullable=True)
-    email = Column(String(100), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False, index=True)

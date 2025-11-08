@@ -25,6 +25,7 @@ routers = [
     ("services.teacher", "teacher_router"),
     ("services.files", "file_router"),
     ("services.guest", "guest_router"),
+    ("services.unichance_ai", "unichance_ai_router")
 ]
 
 for module_path, router_name in routers:

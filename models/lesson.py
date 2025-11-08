@@ -13,8 +13,8 @@ class Lesson(Base):
     subject = Column(SQLAlchemyEnum(LessonSubject), nullable=False)
 
     teacher_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    time = Column(String, index=True)
-    place = Column(String, index=True, nullable=False)
+    time = Column(String)
+    place = Column(String, nullable=False)
 
     users = relationship(User, secondary="lesson_user")
     

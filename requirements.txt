@@ -8,3 +8,5 @@ pydantic
 pydantic[email]
 argon2_cffi
 python-multipart
+openai
+langchain_gigachat

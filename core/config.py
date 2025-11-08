@@ -7,5 +7,6 @@ class Settings(BaseModel):
     SECRET_KEY: str = "Unichance33"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    API_KEY: str = "MDE5OWI4ZjYtMmE2Zi03NDA3LTliNDMtOWE2YzczOTEzNTg3OjhiYjYzOWZhLWE4MDktNGUzMC1hNTFiLWNhZGUwOGVlNTgyNg=="
 
 settings = Settings()
