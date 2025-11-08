@@ -54,7 +54,17 @@ def create_lesson(data: CreateLessonForm, db: Session = Depends(get_db), current
 
 @router.get("/add_child_in_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
 def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    pass
+    if current_user.status == "guest":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You haven't rights to do this"
+        )
+
+    lesson = db.query(Lesson).filter(Lesson.id == lesson_id).first()
+    lesson.users.append(db.query(User).filter(User.id == child_id).first())
+    db.commit()
+
+    return {"result": "secssesfull"}
 
 
 @router.get("/list_of_your_lection")
@@ -64,15 +74,29 @@ def teacher_list_lection(db: Session = Depends(get_db), current_user: User = Dep
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You haven't rights to do this"
         )
-    
-    lessons = db.query(Lesson).filter(Lesson.teacher_id == current_user.id).all()
-    
-    print(lessons)
-    
-    
-    
-    type_lesson: str
-    teacher_FIO: str 
-    time: str
-    place: str
-    childs: list
+
+    lessons_prev = db.query(Lesson).filter(Lesson.teacher_id == current_user.id).all()
+    lessons = []
+
+    teacher = db.query(User).filter(User.id == current_user.id).first()
+
+    for lesson in lessons_prev:
+        user = db.query(User).filter(User.id == lesson.teacher_id).first()
+        lessons.append(
+            {
+                "time": lesson.time,
+                "type_lesson": lesson.type_lesson,
+                "teacher_FIO": f"{teacher.surname} {teacher.name} {teacher.patronymic}",
+                "place": lesson.place,
+                "users":
+                    [{
+                        "id": user.id,
+                        "FIO": f"{user.surname} {user.name} {user.patronymic}",
+                        "email": user.email,
+                        "photo": user.image_path,
+                    }
+                        for user in lesson.users]
+            }
+        )
+
+    return lessons

@@ -4,7 +4,7 @@ from core.database import get_db
 from core.security import hash_password, verify_password, create_access_token, get_current_user
 from schemas.user import UserCreate, UserLogin, Token, UserOut
 from models.user import User
-
+from services.files import check_file_exists
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -13,8 +13,11 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    if user.avatar_uuid:
+        if not check_file_exists(user.avatar_uuid, db):
+            raise HTTPException(status_code=404, detail="Avatar file not found")
+
     hashed = hash_password(user.password)
-    
     new_user = User(
         name=user.name,
         surname=user.surname,
@@ -22,8 +25,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         password_hash=hashed,
         status="guest",
         lesson_type=user.lesson_type,
-        image_path=None,
-        email=user.email,
+        avatar_uuid=user.avatar_uuid,
+        email=str(user.email)
     )
     db.add(new_user)
     db.commit()

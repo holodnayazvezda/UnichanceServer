@@ -12,5 +12,5 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     status = Column(String(100), index=True)
     lesson_type = Column(String(100), index=True)
-    image_path = Column(String(255), nullable=True)
+    avatar_uuid = Column(String(255), nullable=True)
     email = Column(String(100), unique=True, nullable=False)

@@ -51,8 +51,8 @@ with SessionLocal() as db:
             email="Unichance33@yandex.ru",
             password_hash=hash_password("Unichance33"),
             status="superadmin",
+            avatar_uuid="",
             lesson_type="Унишанс",
-            image_path=None
         )
 
         db.add(new_user)

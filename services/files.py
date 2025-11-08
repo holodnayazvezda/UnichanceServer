@@ -83,4 +83,8 @@ def get_file(file_uuid: str, db: Session = Depends(get_db)):
     return Response(content=image, media_type=str(db_file.content_type))
 
 
+def check_file_exists(file_uuid: str, db: Session = Depends(get_db)):
+    db_file = db.query(FileModel).filter(FileModel.uuid == file_uuid).first()
+    return bool(db_file)
+
 

@@ -8,6 +8,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     lesson_type: str
+    avatar_uuid: str
     
 
 class UserLogin(BaseModel):
@@ -28,7 +29,7 @@ class UserOut(BaseModel):
     email: EmailStr
     status: str
     lesson_type: str
-    image_path: str
+    avatar_uuid: str
 
     class Config:
         from_attributes = True
