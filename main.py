@@ -3,6 +3,7 @@ import uvicorn
 import logging.config
 from fastapi import FastAPI
 from core.database import Base, engine
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Unichance API",
@@ -11,6 +12,7 @@ app = FastAPI(
     redoc_url='/docs',
     openapi_url='/api-docs'
 )
+app.mount("/static", StaticFiles(directory="static"), name="static")
 logger = logging.getLogger(__name__)
 
 routers = [
@@ -18,6 +20,7 @@ routers = [
     ("services.auth", "auth_router"),
     ("services.superadmin", "superadmin_router"),
     ("services.teacher", "teacher_router"),
+    ("services.files", "file_router"),
 ]
 
 for module_path, router_name in routers:
