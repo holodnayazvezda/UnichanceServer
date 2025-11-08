@@ -11,6 +11,7 @@ from core.config import settings
 from core.database import get_db
 from core.dependencies import bearer_scheme
 from models.user import User
+from models.lesson import Lesson
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 

@@ -1,12 +1,14 @@
 from pydantic import BaseModel, EmailStr
-
+from fastapi import  UploadFile, File
 
 class UserCreate(BaseModel):
     name: str
-    username: str
+    surname: str
+    patronymic: str
     email: EmailStr
     password: str
-
+    lesson_type: str
+    
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -21,8 +23,12 @@ class Token(BaseModel):
 class UserOut(BaseModel):
     id: int
     name: str
-    username: str
+    surname: str
+    patronymic: str
     email: EmailStr
+    status: str
+    lesson_type: str
+    image_path: str
 
     class Config:
         from_attributes = True
