@@ -11,7 +11,15 @@ router = APIRouter(
     tags=["Guest"]
 )
 
-@router.get("/my_lessons")
+@router.get(
+    "/my_lessons",
+    summary="Получить список уроков гостя",
+    description=(
+        "Возвращает все уроки, на которые записан текущий пользователь со статусом 'гость'. "
+        "Если пользователь не является гостем, возвращает ошибку 403. "
+        "В ответе содержится информация об уроках, включая время, предмет, место и ФИО преподавателя."
+    )
+)
 def get_my_lessons(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.status != UserStatus.GUEST:
         raise HTTPException(

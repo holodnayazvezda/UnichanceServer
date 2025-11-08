@@ -10,7 +10,18 @@ from services.files import check_file_exists
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
-@router.post("/register", response_model=Token)
+
+@router.post(
+    "/register",
+    response_model=Token,
+    summary="Регистрация нового пользователя",
+    description=(
+        "Создаёт нового пользователя в системе. "
+        "Проверяет, что email не занят, и что выбранный предмет допустим. "
+        "Если указан аватар, проверяет его наличие в базе данных. "
+        "После успешной регистрации возвращает JWT-токен для аутентификации."
+    )
+)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -41,7 +52,15 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    summary="Авторизация пользователя",
+    description=(
+        "Выполняет вход пользователя по email и паролю. "
+        "Проверяет корректность учетных данных и возвращает JWT-токен при успешной аутентификации."
+    )
+)
 def login_user(data: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or not verify_password(data.password, user.password_hash):
@@ -54,6 +73,15 @@ def login_user(data: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=UserOut)
+@router.get(
+    "/me",
+    response_model=UserOut,
+    summary="Получить данные текущего пользователя",
+    description=(
+        "Возвращает информацию о текущем пользователе, "
+        "авторизованном через JWT-токен. "
+        "Используется для получения профиля текущего аккаунта."
+    )
+)
 def read_current_user(current_user: User = Depends(get_current_user)):
     return current_user

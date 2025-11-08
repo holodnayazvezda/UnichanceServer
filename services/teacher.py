@@ -11,9 +11,17 @@ from models.lesson import Lesson
 router = APIRouter(prefix="/teacher", tags=["Teacher"])
 
 
-@router.get("/find_id_from_FIO/{user_email}", response_model=ResultOfSearchUserId)
+@router.get(
+    "/find_id_from_FIO/{user_email}",
+    response_model=ResultOfSearchUserId,
+    summary="Найти ID ученика по email",
+    description=(
+            "Позволяет преподавателю найти идентификатор ученика по его email. "
+            "Доступ запрещён пользователям со статусом 'гость'. "
+            "Если пользователь не найден или не является учеником, возвращается ошибка."
+    )
+)
 def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    
     user = db.query(User).filter(User.email == user_email).first()
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
@@ -30,18 +38,28 @@ def find_id_from_FIO(user_email: str, db: Session = Depends(get_db), current_use
     return {"id": user.id}
 
 
-@router.post("/create_lesson", response_model=LessonCreated)
+@router.post(
+    "/create_lesson",
+    response_model=LessonCreated,
+    summary="Создать новый урок",
+    description=(
+            "Позволяет преподавателю создать новый урок. "
+            "В запросе указываются время и место проведения. "
+            "Созданный урок автоматически связывается с преподавателем и его предметом. "
+            "Доступ запрещён гостям."
+    )
+)
 def create_lesson(
         data: CreateLessonForm,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)):
-    
+
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You haven't rights to do this"
         )
-    
+
     new_lesson = Lesson(
         subject=current_user.subject,
         teacher_id=current_user.id,
@@ -51,12 +69,20 @@ def create_lesson(
     db.add(new_lesson)
     db.commit()
     db.refresh(new_lesson)
-    
 
     return new_lesson
 
 
-@router.put("/add_child_in_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
+@router.put(
+    "/add_child_in_list_lesson/{child_id}/{lesson_id}",
+    response_model=ResulfOfOperations,
+    summary="Добавить ученика в урок",
+    description=(
+            "Добавляет ученика с указанным ID в список участников выбранного урока. "
+            "Проверяется, что текущий пользователь — владелец урока или суперадминистратор. "
+            "В случае успеха возвращает сообщение об успешной операции."
+    )
+)
 def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
@@ -94,7 +120,16 @@ def add_child_in_list_lesson(child_id: int, lesson_id: int, db: Session = Depend
     return {"result": "secssesfull"}
 
 
-@router.delete("/delete_child_from_list_lesson/{child_id}/{lesson_id}", response_model=ResulfOfOperations)
+@router.delete(
+    "/delete_child_from_list_lesson/{child_id}/{lesson_id}",
+    response_model=ResulfOfOperations,
+    summary="Удалить ученика из урока",
+    description=(
+            "Удаляет ученика с указанным ID из списка участников урока. "
+            "Проверяется, что текущий пользователь является владельцем урока или суперадминистратором. "
+            "Если ученик не найден в списке — возвращается ошибка."
+    )
+)
 def delete_user_endpoint(child_id: int, lesson_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user = db.query(User).filter(User.id == child_id).first()
 
@@ -137,7 +172,16 @@ def delete_user_endpoint(child_id: int, lesson_id: int, db: Session = Depends(ge
     return {"result": "User secsessfully delete from lesson"}
 
 
-@router.get("/list_of_lessons")
+@router.get(
+    "/list_of_lessons",
+    summary="Получить список уроков преподавателя",
+    description=(
+            "Возвращает все уроки, созданные текущим преподавателем. "
+            "Для каждого урока выводится информация о времени, месте, предмете, "
+            "ФИО преподавателя и списке учеников. "
+            "Доступ запрещён пользователям со статусом 'гость'."
+    )
+)
 def get_list_of_lessons(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.status == UserStatus.GUEST:
         raise HTTPException(
